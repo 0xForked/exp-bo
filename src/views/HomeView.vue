@@ -24,7 +24,7 @@ import TheWelcome from '@/components/TheWelcome.vue'
 </template>
 
 <style>
-@import '@/assets/base.css';
+/* @import '@/assets/base.css';
 
 #app {
   max-width: 1280px;
@@ -118,5 +118,5 @@ nav a:first-of-type {
     padding: 1rem 0;
     margin-top: 1rem;
   }
-}
+} */
 </style>
