@@ -1,5 +1,5 @@
 <template>
-  <Tutorial />
+  <p>Twak Chat</p>
 </template>
 
 <script>
