@@ -38,8 +38,17 @@
             <b>{{ currentUser }}</b>
           </h2>
 
-          <!-- <div class="flex-1 overflow-auto">
-            <div class="message mb-4 flex">
+          <div v-for="msg in messageList" :key="msg.id" >
+            <div  v-if="msg.type === 'message'" class="flex-1 overflow-auto">
+              <div v-if="msg.author_id === '0x445.eth@gmail.com'" class="message me mb-4 flex text-right" >
+                <div class="flex-1 px-2">
+                    <div class="inline-block bg-blue-600 rounded-full p-2 px-6 text-white">
+                        <span>{{ msg.text }}</span>
+                    </div>
+                    <div class="pr-4"><small class="text-gray-500">{{ myDateFormat(msg.created_at) }}</small></div>
+                </div>
+              </div>
+              <div v-else class="message mb-4 flex">
                 <div class="flex-2">
                     <div class="w-12 h-12 relative">
                         <img class="w-12 h-12 rounded-full mx-auto" src="https://dummyimage.com/80x80" alt="chat-user" />
@@ -48,21 +57,13 @@
                 </div>
                 <div class="flex-1 px-2">
                     <div class="inline-block bg-gray-300 rounded-full p-2 px-6 text-gray-700">
-                        <span>Hey there. We would like to invite you over to our office for a visit. How about it?</span>
+                        <span>{{ msg.text }}</span>
                     </div>
-                    <div class="pl-4"><small class="text-gray-500">15 April</small></div>
+                    <div class="pl-4"><small class="text-gray-500">{{ myDateFormat(msg.created_at) }}</small></div>
                 </div>
+              </div>
             </div>
-
-            <div class="message me mb-4 flex text-right">
-                <div class="flex-1 px-2">
-                    <div class="inline-block bg-blue-600 rounded-full p-2 px-6 text-white">
-                        <span>It's like a dream come true</span>
-                    </div>
-                    <div class="pr-4"><small class="text-gray-500">15 April</small></div>
-                </div>
-            </div>
-          </div> -->
+          </div>
 
           <div class="flex-2 pt-4 pb-10">
             <div class="write bg-white shadow flex rounded-lg">
@@ -151,7 +152,7 @@ export default {
       const msg = JSON.parse(event.data)
       if (msg.success === false) { 
         alert(`You got error ${msg.payload.error}`)
-        console.log(msg.payload.error)
+        // console.log(msg.payload.error)
       } else if(msg.action === 'login') {
         this.loadChatList()
       } else if(msg.action === 'list_chats') {
@@ -162,7 +163,10 @@ export default {
         // console.log(msg.payload)        
       } else if(msg.action === 'get_chat') {
         this.messageList = msg.payload.thread.events
-        console.log(msg.payload)        
+        // console.log(msg.payload)        
+      } else if(msg.action === 'incoming_sneak_peek') {
+        this.loadChatMessage()
+        // console.log(msg.action) 
       }
     }
 
@@ -218,6 +222,7 @@ export default {
             }
           }
         }))
+        this.message = ''
       }
     },
     myDateFormat(d) {
@@ -225,106 +230,5 @@ export default {
       return `${createdAt.getDate()} ${createdAt.toLocaleString('default', { month: 'long' })}`;
     },
   }
-  // async fetch() {
-  //   this.chat = await await this.$axios.$get(`${apiUrl()}/livechat/agent/conversations`)
-  // },
-  // methods: {
-  //   myDateFormat(d) {
-  //     const createdAt = new Date(d);
-  //     return `${createdAt.getDate()} ${createdAt.toLocaleString('default', { month: 'long' })}`;
-  //   },
-  //   sendMessage() {
-  //     if (this.messages === '') {
-  //       alert('woi butuh message')
-  //     } else {
-  //       const protocolMessage = {
-  //         action: 'send_event',
-  //         request_id: Math.random().toString(36), 
-  //         payload: {
-  //           token: "Bearer dal:XMmLCYZgwhUNUrUuFlK8aya8Prs"
-  //         },
-  //         chat_id: this.selectedConversation.id, 
-  //         event: {
-  //           type: "message",
-  //           text: this.messages
-  //         }
-  //       }
-
-  //       this.connection.send(JSON.stringify(protocolMessage));
-  //     }
-  //   },
-  //   pickConversation(conversation) { 
-  //     this.selectedConversation = conversation
-      
-  //     console.log("Starting connection to WebSocket Server")
-  //     this.connection = new WebSocket("wss://api.livechatinc.com/v3.4/agent/rtm/ws")
-
-  //     const ref = this
-    
-  //     this.connection.onmessage = function(event) {
-  //       console.log(event);
-  //       console.log(JSON.parse(event.data));
-  //       console.log('On Message');
-
-  //       const msg = JSON.parse(event.data)
-  //       if (msg.success === false) {
-  //         console.error('you got error: ', msg.payload.error)
-  //       } else {
-  //         console.log("You have recieved message:", msg.action) 
-
-  //         if (msg.action === 'login') {
-  //           ref.loadMessage()
-  //         }
-
-  //         if (msg.action === 'get_chat') {
-  //           console.log('message payload', msg.payload.thread.events)
-  //         }
-  //       }
-  //     }
-
-  //     this.connection.onopen = (event) => {
-  //       console.log(event)
-  //       console.log("Successfully connected to the echo websocket server...")
-
-  //       this.doLogin()
-  //     }
-
-  //     this.connection.onclose = function(event) {
-  //       console.log(event)
-  //       console.log("Successfully close connection...")
-  //     }
-  //   },
-  //   doLogin() {
-  //     this.connection.send(JSON.stringify({
-  //       action: "login",
-  //       payload: {
-  //         token: "Bearer dal:XMmLCYZgwhUNUrUuFlK8aya8Prs"
-  //       }
-  //     }))
-  //   },
-  //   laodChat() {
-      
-  //   },
-  //   loadMessage() {
-  //     this.connection.send(JSON.stringify({
-  //       action: "get_chat",
-  //       payload: {
-  //         token: "Bearer dal:XMmLCYZgwhUNUrUuFlK8aya8Prs",
-  //         chat_id: this.selectedConversation.id,
-  //         // thread_id: this.selectedConversation.id
-  //       }
-  //     }))
-  //   }
-  // }
 }
 </script>
-
-
-// on load 
-// conncet to webscoket
-// login to websocket
-// load chat list 
-// display chat list
-// click chat list
-// load message
-// display message list
