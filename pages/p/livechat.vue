@@ -38,32 +38,35 @@
             <b>{{ currentUser }}</b>
           </h2>
 
-          <div v-for="msg in messageList" :key="msg.id" >
-            <div  v-if="msg.type === 'message'" class="flex-1 overflow-auto">
-              <div v-if="msg.author_id === '0x445.eth@gmail.com'" class="message me mb-4 flex text-right" >
-                <div class="flex-1 px-2">
-                    <div class="inline-block bg-blue-600 rounded-full p-2 px-6 text-white">
-                        <span>{{ msg.text }}</span>
-                    </div>
-                    <div class="pr-4"><small class="text-gray-500">{{ myDateFormat(msg.created_at) }}</small></div>
+          <div class="overflow-y-auto h-96">
+            <div v-for="msg in messageList" :key="msg.id">
+              <div  v-if="msg.type === 'message'" class="flex-1">
+                <div v-if="msg.author_id === '0x445.eth@gmail.com'" class="message me mb-4 flex text-right" >
+                  <div class="flex-1 px-2">
+                      <div class="inline-block bg-blue-600 rounded-full p-2 px-6 text-white">
+                          <span>{{ msg.text }}</span>
+                      </div>
+                      <div class="pr-4"><small class="text-gray-500">{{ myDateFormat(msg.created_at) }}</small></div>
+                  </div>
                 </div>
-              </div>
-              <div v-else class="message mb-4 flex">
-                <div class="flex-2">
-                    <div class="w-12 h-12 relative">
-                        <img class="w-12 h-12 rounded-full mx-auto" src="https://dummyimage.com/80x80" alt="chat-user" />
-                        <span class="absolute w-4 h-4 bg-gray-400 rounded-full right-0 bottom-0 border-2 border-white"></span>
-                    </div>
-                </div>
-                <div class="flex-1 px-2">
-                    <div class="inline-block bg-gray-300 rounded-full p-2 px-6 text-gray-700">
-                        <span>{{ msg.text }}</span>
-                    </div>
-                    <div class="pl-4"><small class="text-gray-500">{{ myDateFormat(msg.created_at) }}</small></div>
+                <div v-else class="message mb-4 flex">
+                  <div class="flex-2">
+                      <div class="w-12 h-12 relative">
+                          <img class="w-12 h-12 rounded-full mx-auto" src="https://dummyimage.com/80x80" alt="chat-user" />
+                          <span class="absolute w-4 h-4 bg-gray-400 rounded-full right-0 bottom-0 border-2 border-white"></span>
+                      </div>
+                  </div>
+                  <div class="flex-1 px-2">
+                      <div class="inline-block bg-gray-300 rounded-full p-2 px-6 text-gray-700">
+                          <span>{{ msg.text }}</span>
+                      </div>
+                      <div class="pl-4"><small class="text-gray-500">{{ myDateFormat(msg.created_at) }}</small></div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+         
 
           <div class="flex-2 pt-4 pb-10">
             <div class="write bg-white shadow flex rounded-lg">
