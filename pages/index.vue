@@ -37,14 +37,19 @@ export default {
   },
   beforeCreate () {
     if (localStorage.is_logged_in) {
-      this.$router.push('/p/home') 
+      this.$router.push({ path: '/p/home' }) 
     }
   },
   methods: {
     loggedIn(user) {
       localStorage.setItem('is_logged_in', true)
       localStorage.setItem('user', JSON.stringify(user))
-      this.$router.push('/p/home')
+      this.$router.push({ path: '/p/home' })
+
+      // force reload if not redirect
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000)
     },
     updateFCMToken() {
       // TODO: 

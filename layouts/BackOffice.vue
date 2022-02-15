@@ -221,9 +221,9 @@ export default {
       }
     },
     signOut () {
-      localStorage.removeItem('is_logged_in')
-      localStorage.removeItem('user')
-      this.$router.push('/')
+      localStorage.clear()
+
+      this.$router.push({ path: '/' })
     }
   }
 }
