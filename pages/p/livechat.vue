@@ -106,7 +106,7 @@
         Loading please wait . . .
       </h5>
 
-      <div v-if="showLiveChat" class="text-center">
+      <div v-if="!showLiveChat" class="text-center">
         <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"  @click="showLiveChatPopup = !showLiveChatPopup">
           Login LiveChat
         </button>
@@ -153,10 +153,11 @@ export default {
     this.ws.onmessage = (event) => {
       // console.log(event);
       const msg = JSON.parse(event.data)
+      console.log(msg)
       if (msg.success === false) { 
         alert(`You got error ${msg.payload.error}`)
         // console.log(msg.payload.error)
-      } else if(msg.action === 'login') {
+      } else if(msg.action === 'login' || msg.action === 'incoming_event') {
         this.loadChatList()
       } else if(msg.action === 'list_chats') {
         this.loading = false
@@ -167,9 +168,12 @@ export default {
       } else if(msg.action === 'get_chat') {
         this.messageList = msg.payload.thread.events
         // console.log(msg.payload)        
-      } else if(msg.action === 'incoming_sneak_peek') {
+      } else if(msg.action === 'incoming_sneak_peek' && this.currentUser === '') {
         this.loadChatMessage()
         // console.log(msg.action) 
+        // console.log() 
+      } else {
+        console.log(msg.action)
       }
     }
 
