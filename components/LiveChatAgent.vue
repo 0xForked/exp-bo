@@ -19,7 +19,7 @@
                 <span class="text-gray-800">{{ chat.last_event_per_type.filled_form.event.fields[0].answer }}</span>
               </div>
               <div>
-                <small class="text-gray-600">{{ chat.last_event_per_type.message.event.text }}</small>
+                <small class="text-gray-600">{{ isJsonString(chat.last_event_per_type.message.event.text) ? 'Sent ' + Object.keys(parseJsonData(chat.last_event_per_type.message.event.text).products).length + ' product' : chat.last_event_per_type.message.event.text }}</small>
               </div>
           </div>
           <div class="flex-2 text-right">
@@ -41,7 +41,7 @@
           <div class="overflow-y-auto h-96">
             <div v-for="msg in messageList" :key="msg.id">
               <div  v-if="msg.type === 'message'" class="flex-1">
-                <div v-if="msg.author_id === 'adhi.sumitro@hotmail.com'" class="message me mb-4 flex text-right" >
+                <div v-if="msg.author_id !== selectedChat.last_event_per_type.filled_form.event.author_id && !isJsonString(msg.text)" class="message me mb-4 flex text-right" >
                   <div class="flex-1 px-2">
                       <div class="inline-block bg-blue-600 rounded-full p-2 px-6 text-white">
                           <span>{{ msg.text }}</span>
@@ -49,7 +49,7 @@
                       <div class="pr-4"><small class="text-gray-500">{{ myDateFormat(msg.created_at) }}</small></div>
                   </div>
                 </div>
-                <div v-else class="message mb-4 flex">
+                <div v-else-if="!isJsonString(msg.text)" class="message mb-4 flex">
                   <div class="flex-2">
                       <div class="w-12 h-12 relative">
                           <img class="w-12 h-12 rounded-full mx-auto" src="https://dummyimage.com/80x80" alt="chat-user" />
@@ -61,6 +61,34 @@
                           <span>{{ msg.text }}</span>
                       </div>
                       <div class="pl-4"><small class="text-gray-500">{{ myDateFormat(msg.created_at) }}</small></div>
+                  </div>
+                </div>
+                <div v-if="isJsonString(msg.text)">
+                  <div v-if="msg.author_id !== selectedChat.last_event_per_type.filled_form.event.author_id" class="message me mb-4 flex text-right" >
+                    <div class="flex-1 px-2">
+                        <div class="inline-block bg-blue-600 rounded-full p-2 px-6 text-white">
+                            <span>{{ parseJsonData(msg.text).message }}</span>
+                        </div>
+                        <div class="pr-4"><small class="text-gray-500">{{ myDateFormat(msg.created_at) }}</small></div>
+                    </div>
+                  </div>
+                  <div class="mt-6 flex" :class="(msg.author_id !== selectedChat.last_event_per_type.filled_form.event.author_id) ? 'flex-row-reverse' : 'flex-row'">
+                    <div v-for="product in (parseJsonData(msg.text).products)" :key="product.id" class="group relative">
+                      <div class="w-40 h-40 bg-gray-200 aspect-w-1 aspect-h-1 rounded-md overflow-hidden group-hover:opacity-75 lg:h-40 lg:aspect-none">
+                        <img :src="product.imageUrl" alt="Front of men&#039;s Basic Tee in black." class="w-40 h-40 object-center object-cover lg:w-full lg:h-full">
+                      </div>
+                      <div class="mt-4 flex justify-between">
+                        <div>
+                          <h3 class="text-sm text-gray-700">
+                            <a href="#">
+                              <span aria-hidden="true" class="absolute inset-0"></span>
+                              {{ product.name }}
+                            </a>
+                          </h3>
+                          <p class="mt-1 text-sm text-gray-500">{{ product.description }}</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -111,6 +139,8 @@
 
 
 <script>
+import { apiUrl } from '@/services/api'
+
 export default {
   name: 'LiveChatAgent',
   data() {
@@ -124,8 +154,12 @@ export default {
       currentUser: '',
       showLiveChat: false,
       showMessageBox: false,
-      loading: true
+      loading: true,
+      productList: []
     }
+  },
+   async fetch() {
+    this.productList = await this.$axios.$get(`${apiUrl()}/ecommerce/products`)
   },
   created() {
     const accessToken = localStorage.getItem('live_chat_access_token');
@@ -138,7 +172,7 @@ export default {
       // console.log(msg)
       if (msg.success === false) { 
         alert(`You got error ${msg.payload.error}`)
-        // console.log(msg.payload.error)
+        console.log(msg.payload.error)
       } else if(msg.action === 'login' || msg.action === 'incoming_event') {
         this.loadChatList()
       } else if(msg.action === 'list_chats') {
@@ -153,7 +187,8 @@ export default {
       } else if(msg.action === 'incoming_sneak_peek' && this.currentUser !== '' || msg.action === 'events_marked_as_seen' || msg.action === 'send_event') {
         this.loadChatMessage()
         // console.log(msg.action) 
-        // console.log() 
+        console.log(this.messageList) 
+        console.log(this.selectedChat) 
       } else {
         console.log(msg.action)
         console.log(msg.payload)
@@ -183,7 +218,7 @@ export default {
         action: "list_chats",
         payload: {
           filters: {
-            group_ids: [1]
+            group_ids: [0, 1]
           }
         }
       }))
@@ -205,6 +240,19 @@ export default {
     sendMessage() {
       if (this.message === '') {
         alert('plese write a message')
+      } else if (Object.keys(this.productList.products).length > 0) {
+        this.ws.send(JSON.stringify({
+          action: "send_event",
+          payload: {
+            chat_id: this.selectedChat.id, 
+            event: {
+              type: "message",
+              text: JSON.stringify({message: this.message, products: this.productList.products})
+            }
+          }
+        }))
+        this.message = ''
+
       } else {
         this.ws.send(JSON.stringify({
           action: "send_event",
@@ -223,6 +271,18 @@ export default {
       const createdAt = new Date(d);
       return `${createdAt.getDate()} ${createdAt.toLocaleString('default', { month: 'long' })}`;
     },
+    parseJsonData(data) {
+      return JSON.parse(data);
+    },
+
+    isJsonString(str) {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
+    }
   }
 }
 </script>
